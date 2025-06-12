@@ -176,7 +176,7 @@ if st.button("🚀 Run Import"):
         for l1 in levels["L1"]:
             st.text(f"• {l1}")
             for l2 in [child for parent, child in edges if parent == l1]:
-                st.text(f"    └─ {l2}")
+                st.text(f"  └─ {l2}")
                 for l3 in [child for parent, child in edges if parent == l2]:
                     st.text(f"            └── {l3}")
 
