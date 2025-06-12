@@ -44,7 +44,6 @@ def create_card(title, description, custom_id, start_date, finish_date, header, 
     payload = {
         "title": title,
         "description": description or "",
-        "typeId": TYPE_ID,
         "laneId": int(lane_id) if pd.notna(lane_id) else None,
         "boardId": board_id,
         "cardId": "newCard"
