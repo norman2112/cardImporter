@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 st.set_page_config(page_title="AgilePlace Card Importer", layout="wide")
-st.title("📋 AgilePlace Hierarchy Uploader")
+st.title("AgilePlace Hierarchy Uploader")
 
 # === Sidebar Configuration ===
 st.sidebar.header("🔐 API Configuration")
