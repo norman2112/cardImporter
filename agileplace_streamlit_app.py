@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import requests
@@ -8,15 +9,11 @@ from datetime import datetime
 st.set_page_config(page_title="AgilePlace Card Importer", layout="wide")
 st.title("AgilePlace Hierarchy Uploader")
 
-# ... (keep existing imports and setup)
-
 # === Sidebar Configuration ===
 st.sidebar.header("🔐 API Configuration")
 domain = st.sidebar.text_input("Domain (e.g., ngarrett)", key="domain")
 token = st.sidebar.text_input("API Token", type="password", key="token")
 board_id = st.sidebar.text_input("Board ID", key="board")
-
-# Preview only toggle
 preview_only = st.sidebar.checkbox("🔍 Preview only (no API calls)", value=False)
 
 # Sample template download
@@ -28,10 +25,68 @@ with open("cardData_Connections.xlsx", "rb") as f:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-# === File Upload in Sidebar ===
 uploaded_file = st.sidebar.file_uploader("Upload your Excel file with card data", type=["xlsx"])
 
-# === Run Only if Config + File Are Ready ===
+COMMENTS = [
+    "This is going well.",
+    "This card is at risk.",
+    "Waiting on input.",
+    "Escalated to manager.",
+    "Dependencies cleared.",
+    "High priority item."
+]
+
+def format_date(date_val):
+    if pd.isna(date_val):
+        return None
+    return pd.to_datetime(date_val).strftime("%Y-%m-%d")
+
+def create_card(title, description, custom_id, start_date, finish_date, header, lane_id):
+    payload = {
+        "title": title,
+        "description": description or "",
+        "laneId": int(lane_id) if pd.notna(lane_id) else None,
+        "boardId": board_id,
+        "cardId": "newCard"
+    }
+    if custom_id:
+        payload["customId"] = str(custom_id)
+    if start_date:
+        payload["plannedStart"] = format_date(start_date)
+    if finish_date:
+        payload["plannedFinish"] = format_date(finish_date)
+    if header:
+        payload["header"] = header
+
+    url = f"https://{domain}.leankit.com/io/card"
+    response = requests.post(url, json=payload, headers=HEADERS)
+    if response.status_code not in (200, 201):
+        st.error("❌ Card creation failed")
+        st.code(f"Status Code: {response.status_code}")
+        st.write("Payload sent:")
+        st.json(payload)
+        st.write("API Response:")
+        st.code(response.text)
+        st.stop()
+    card_id = response.json()["id"]
+    comment = random.choice(COMMENTS)
+    post_comment(card_id, comment)
+    time.sleep(0.25)
+    return card_id
+
+def connect_cards(parent_id, child_id):
+    url = f"https://{domain}.leankit.com/io/card/{parent_id}/connection/many"
+    payload = {"connectedCardIds": [str(child_id)]}
+    response = requests.post(url, json=payload, headers=HEADERS)
+    time.sleep(0.25)
+    response.raise_for_status()
+
+def post_comment(card_id, comment_text):
+    url = f"https://{domain}.leankit.com/io/card/{card_id}/comment"
+    payload = {"text": comment_text}
+    response = requests.post(url, json=payload, headers=HEADERS)
+    response.raise_for_status()
+
 if uploaded_file and domain and token and board_id:
     HEADERS = {
         "Authorization": f"Bearer {token}",
@@ -40,7 +95,6 @@ if uploaded_file and domain and token and board_id:
 
     df = pd.read_excel(uploaded_file)
     df.columns = df.columns.str.strip()
-
     st.success("✅ File loaded and configuration accepted!")
 
     if st.sidebar.button("🚀 Run Import"):
@@ -75,9 +129,7 @@ if uploaded_file and domain and token and board_id:
                 for l3 in [child for parent, child in edges if parent == l2]:
                     st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
 
-        if preview_only:
-            st.info("✅ Preview-only mode enabled — no cards were created or connected.")
-        else:
+        if not preview_only:
             card_id_map = {}
             current_l1 = None
             current_l2 = None
@@ -141,6 +193,8 @@ if uploaded_file and domain and token and board_id:
                 progress.progress((i + 1) / total_rows)
 
             st.success("🎉 All cards created and connected!")
+        else:
+            st.info("✅ Preview-only mode enabled — no API calls were made.")
 
 else:
     st.info("Fill in the sidebar fields and upload a file to begin.")
