@@ -41,8 +41,6 @@ if uploaded_file and domain and token and board_id:
             payload = {
                 "title": row.get("Card Title", ""),
                 "description": row.get("Card Description", ""),
-                "typeId": "1701665404",
-                "laneId": "1701665420",
                 "boardId": board_id,
                 "cardId": "newCard"
             }
