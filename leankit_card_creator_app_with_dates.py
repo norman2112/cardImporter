@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 from datetime import datetime
 
-st.title("LeanKit Card Creator")
+st.title("Card Creator from Excel")
 
 st.markdown("Upload an Excel (.xlsx) file with the following **required columns**: 'Card Title', 'Card Description', and optional: 'Custom ID (Header)', 'Start Date', 'Finish Date'.")
 
