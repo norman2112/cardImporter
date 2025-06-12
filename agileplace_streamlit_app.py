@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 import random
 from datetime import datetime
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="AgilePlace Card Importer", layout="wide")
 st.title("📋 AgilePlace Card Hierarchy Uploader")
@@ -146,78 +147,74 @@ if uploaded_file and domain and token and board_id:
 
     st.success("🎉 All cards created and connected!")
 
-import plotly.graph_objects as go
+    # === HIERARCHY TREE VISUALIZATION ===
+    st.subheader("📊 Card Hierarchy Visualization")
 
-# === HIERARCHY TREE VISUALIZATION ===
-st.subheader("📊 Card Hierarchy Visualization")
+    col1, col2 = st.columns([2, 3])
 
-col1, col2 = st.columns([2, 3])
+    with col2:
+        levels = {"L1": [], "L2": [], "L3": []}
+        edges = []
+        current_l1 = None
+        current_l2 = None
 
-with col2:
-    # Build levels and edges
-    levels = {"L1": [], "L2": [], "L3": []}
-    edges = []
-    current_l1 = None
-    current_l2 = None
+        for _, row in df.iterrows():
+            l1, l2, l3 = row["L1"], row["L2"], row["L3"]
 
-    for _, row in df.iterrows():
-        l1, l2, l3 = row["L1"], row["L2"], row["L3"]
+            if pd.notna(l1):
+                current_l1 = l1
+                if l1 not in levels["L1"]:
+                    levels["L1"].append(l1)
+            if pd.notna(l2):
+                current_l2 = l2
+                if l2 not in levels["L2"]:
+                    levels["L2"].append(l2)
+                if current_l1:
+                    edges.append((current_l1, l2))
+            if pd.notna(l3):
+                if l3 not in levels["L3"]:
+                    levels["L3"].append(l3)
+                if current_l2:
+                    edges.append((current_l2, l3))
 
-        if pd.notna(l1):
-            current_l1 = l1
-            if l1 not in levels["L1"]:
-                levels["L1"].append(l1)
-        if pd.notna(l2):
-            current_l2 = l2
-            if l2 not in levels["L2"]:
-                levels["L2"].append(l2)
-            if current_l1:
-                edges.append((current_l1, l2))
-        if pd.notna(l3):
-            if l3 not in levels["L3"]:
-                levels["L3"].append(l3)
-            if current_l2:
-                edges.append((current_l2, l3))
+        node_x, node_y = {}, {}
+        spacing = 1.5
+        for i, level in enumerate(["L1", "L2", "L3"]):
+            for j, name in enumerate(levels[level]):
+                node_x[name] = j * spacing
+                node_y[name] = -i
 
-    # Assign coordinates
-    node_x, node_y = {}, {}
-    spacing = 1.5
-    for i, level in enumerate(["L1", "L2", "L3"]):
-        for j, name in enumerate(levels[level]):
-            node_x[name] = j * spacing
-            node_y[name] = -i
+        edge_x, edge_y = [], []
+        for src, tgt in edges:
+            edge_x += [node_x[src], node_x[tgt], None]
+            edge_y += [node_y[src], node_y[tgt], None]
 
-    edge_x, edge_y = [], []
-    for src, tgt in edges:
-        edge_x += [node_x[src], node_x[tgt], None]
-        edge_y += [node_y[src], node_y[tgt], None]
+        node_trace = go.Scatter(
+            x=[node_x[n] for n in node_x],
+            y=[node_y[n] for n in node_y],
+            text=list(node_x.keys()),
+            mode='markers+text',
+            textposition='bottom center',
+            marker=dict(size=20, color='skyblue')
+        )
 
-    node_trace = go.Scatter(
-        x=[node_x[n] for n in node_x],
-        y=[node_y[n] for n in node_y],
-        text=list(node_x.keys()),
-        mode='markers+text',
-        textposition='bottom center',
-        marker=dict(size=20, color='skyblue')
-    )
+        edge_trace = go.Scatter(
+            x=edge_x, y=edge_y,
+            line=dict(width=1, color='gray'),
+            mode='lines',
+            hoverinfo='none'
+        )
 
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=1, color='gray'),
-        mode='lines',
-        hoverinfo='none'
-    )
-
-    fig = go.Figure(data=[edge_trace, node_trace])
-    fig.update_layout(
-        title="Card Hierarchy",
-        xaxis=dict(visible=False),
-        yaxis=dict(visible=False),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        margin=dict(l=0, r=0, t=40, b=0)
-    )
-    st.plotly_chart(fig, use_container_width=True)
+        fig = go.Figure(data=[edge_trace, node_trace])
+        fig.update_layout(
+            title="Card Hierarchy",
+            xaxis=dict(visible=False),
+            yaxis=dict(visible=False),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            margin=dict(l=0, r=0, t=40, b=0)
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.info("Fill in the sidebar fields and upload a file to begin.")
