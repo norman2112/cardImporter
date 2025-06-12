@@ -163,16 +163,18 @@ if st.button("🚀 Run Import"):
             progress.progress((i + 1) / total_rows)
 
         st.success("🎉 All cards created and connected!")
-        st.subheader("📄 Card Hierarchy Preview")
+        # === CLEAN CARD HIERARCHY PREVIEW ===
+        st.subheader("📁 Card Hierarchy Preview")
 
         levels = {"L1": [], "L2": [], "L3": []}
         edges = []
         current_l1 = None
         current_l2 = None
 
+        # Build levels and edges using fill-down logic
         for _, row in df.iterrows():
             l1, l2, l3 = row["L1"], row["L2"], row["L3"]
-
+        
             if pd.notna(l1):
                 current_l1 = l1
                 if l1 not in levels["L1"]:
@@ -189,20 +191,15 @@ if st.button("🚀 Run Import"):
                 if current_l2:
                     edges.append((current_l2, l3))
 
-        st.markdown("📁 **Hierarchy Preview**", unsafe_allow_html=True)
+        # Display hierarchy
         for l1 in levels["L1"]:
             st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
-        for l2 in [child for parent, child in edges if parent == l1]:
-            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
-        for l3 in [child for parent, child in edges if parent == l2]:
-            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
-        for l1 in levels["L1"]:
-            st.text(f"• {l1}")
-        for l2 in [child for parent, child in edges if parent == l1]:
-            st.text(f"    └─ {l2}")
-        for l3 in [child for parent, child in edges if parent == l2]:
-            st.text(f"            └── {l3}")
-        # === HIERARCHY TREE VISUALIZATION ===
+            for l2 in [child for parent, child in edges if parent == l1]:
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
+                for l3 in [child for parent, child in edges if parent == l2]:
+                    st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
+
+    
         else:
             st.info("Fill in the sidebar fields and upload a file to begin.")
         # === SIMPLE HIERARCHY TEXT PREVIEW ===
