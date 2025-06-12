@@ -15,7 +15,7 @@ domain = st.sidebar.text_input("Domain (e.g., ngarrett)", key="domain")
 token = st.sidebar.text_input("API Token", type="password", key="token")
 board_id = st.sidebar.text_input("Board ID", key="board")
 # Sample template download
-with open("sample_template.xlsx", "rb") as f:
+with open("cardData_Connections.xlsx", "rb") as f:
     st.sidebar.download_button(
         label="⬇️ Download Sample Excel Template",
         data=f,
