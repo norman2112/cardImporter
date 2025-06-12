@@ -99,7 +99,42 @@ if uploaded_file and domain and token and board_id:
 
     st.success("✅ File loaded and configuration accepted!")
 if st.button("🚀 Run Import"):
+            # === CLEAN CARD HIERARCHY PREVIEW ===
+        st.subheader("📁 Card Hierarchy Preview")
 
+        levels = {"L1": [], "L2": [], "L3": []}
+        edges = []
+        current_l1 = None
+        current_l2 = None
+
+        # Build levels and edges using fill-down logic
+        for _, row in df.iterrows():
+            l1, l2, l3 = row["L1"], row["L2"], row["L3"]
+        
+            if pd.notna(l1):
+                current_l1 = l1
+                if l1 not in levels["L1"]:
+                    levels["L1"].append(l1)
+            if pd.notna(l2):
+                current_l2 = l2
+                if l2 not in levels["L2"]:
+                    levels["L2"].append(l2)
+                if current_l1:
+                    edges.append((current_l1, l2))
+            if pd.notna(l3):
+                if l3 not in levels["L3"]:
+                    levels["L3"].append(l3)
+                if current_l2:
+                    edges.append((current_l2, l3))
+
+        # Display hierarchy
+        for l1 in levels["L1"]:
+            st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
+            for l2 in [child for parent, child in edges if parent == l1]:
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
+                for l3 in [child for parent, child in edges if parent == l2]:
+                    st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
+                    
         card_id_map = {}
         current_l1 = None
         current_l2 = None
@@ -163,41 +198,7 @@ if st.button("🚀 Run Import"):
             progress.progress((i + 1) / total_rows)
 
         st.success("🎉 All cards created and connected!")
-        # === CLEAN CARD HIERARCHY PREVIEW ===
-        st.subheader("📁 Card Hierarchy Preview")
 
-        levels = {"L1": [], "L2": [], "L3": []}
-        edges = []
-        current_l1 = None
-        current_l2 = None
-
-        # Build levels and edges using fill-down logic
-        for _, row in df.iterrows():
-            l1, l2, l3 = row["L1"], row["L2"], row["L3"]
-        
-            if pd.notna(l1):
-                current_l1 = l1
-                if l1 not in levels["L1"]:
-                    levels["L1"].append(l1)
-            if pd.notna(l2):
-                current_l2 = l2
-                if l2 not in levels["L2"]:
-                    levels["L2"].append(l2)
-                if current_l1:
-                    edges.append((current_l1, l2))
-            if pd.notna(l3):
-                if l3 not in levels["L3"]:
-                    levels["L3"].append(l3)
-                if current_l2:
-                    edges.append((current_l2, l3))
-
-        # Display hierarchy
-        for l1 in levels["L1"]:
-            st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
-            for l2 in [child for parent, child in edges if parent == l1]:
-                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
-                for l3 in [child for parent, child in edges if parent == l2]:
-                    st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
 
     
         else:
