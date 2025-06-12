@@ -98,7 +98,9 @@ if uploaded_file and domain and token and board_id:
     st.success("✅ File loaded and configuration accepted!")
 
     if st.sidebar.button("🚀 Run Import"):
-        st.subheader("📁 Card Hierarchy Preview")
+    left_col, right_col = st.columns([3, 2])
+    with left_col:
+                st.subheader("📁 Card Hierarchy Preview")
         levels = {"L1": [], "L2": [], "L3": []}
         edges = []
         current_l1 = None
@@ -122,19 +124,21 @@ if uploaded_file and domain and token and board_id:
                 if current_l2:
                     edges.append((current_l2, l3))
 
-        for l1 in levels["L1"]:
+                for l1 in levels["L1"]:
             st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
-            for l2 in [child for parent, child in edges if parent == l1]:
+                        for l2 in [child for parent, child in edges if parent == l1]:
                 st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
-                for l3 in [child for parent, child in edges if parent == l2]:
+                                for l3 in [child for parent, child in edges if parent == l2]:
                     st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
 
+            with right_col:
         if not preview_only:
             card_id_map = {}
             current_l1 = None
             current_l2 = None
 
-            progress = st.progress(0)
+                    progress = st.progress(0)
+        log_placeholder = st.container()
             total_rows = len(df)
 
             for i, row in df.iterrows():
@@ -162,7 +166,8 @@ if uploaded_file and domain and token and board_id:
                         row.get("L1 Lane")
                     )
                     card_id_map[l1_title] = l1_id
-                    st.write(f"✅ Created L1: {l1_title}")
+                                with log_placeholder:
+                st.success(f"Created L1: {l1_title}")
 
                 if pd.notna(l2_title) and l2_title not in card_id_map:
                     l2_id = create_card(
@@ -175,7 +180,7 @@ if uploaded_file and domain and token and board_id:
                     )
                     card_id_map[l2_title] = l2_id
                     connect_cards(card_id_map[l1_title], l2_id)
-                    st.write(f"🔗 Connected {l1_title} → {l2_title}")
+                                    st.markdown(f"🔗 Connected {l1_title} → {l2_title}")
 
                 if pd.notna(l3_title) and l3_title not in card_id_map:
                     l3_id = create_card(
@@ -188,7 +193,7 @@ if uploaded_file and domain and token and board_id:
                     )
                     card_id_map[l3_title] = l3_id
                     connect_cards(card_id_map[l2_title], l3_id)
-                    st.write(f"🔗 Connected {l2_title} → {l3_title}")
+                                    st.markdown(f"🔗 Connected {l2_title} → {l3_title}")
 
                 progress.progress((i + 1) / total_rows)
 
