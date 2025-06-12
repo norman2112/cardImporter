@@ -60,7 +60,10 @@ def create_card(title, description, custom_id, start_date, finish_date, header, 
 
     url = f"https://{domain}.leankit.com/io/card"
     response = requests.post(url, json=payload, headers=HEADERS)
-    response.raise_for_status()
+    if response.status_code not in (200, 201):
+    st.error("❌ Card creation failed")
+    st.code(response.text)
+    st.stop()
     card_id = response.json()["id"]
     comment = random.choice(COMMENTS)
     post_comment(card_id, comment)
