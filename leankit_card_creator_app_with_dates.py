@@ -19,7 +19,7 @@ def format_date(date_val):
     if pd.isna(date_val):
         return None
     try:
-        return pd.to_datetime(date_val).strftime('%Y-%m-%dT00:00:00Z')
+        return pd.to_datetime(date_val).strftime('%Y-%m-%d')
     except:
         return None
 
@@ -50,7 +50,7 @@ if uploaded_file and domain and token and board_id:
             # Optional: customId
             custom_id = row.get("Custom ID (Header)")
             if pd.notna(custom_id):
-                payload["customId"] = {"value": str(custom_id)}
+                payload["customId"] = str(custom_id)
 
             # Optional: start/finish dates
             start_date = format_date(row.get("Start Date"))
