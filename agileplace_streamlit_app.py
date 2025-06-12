@@ -7,13 +7,20 @@ import time
 from datetime import datetime
 
 st.set_page_config(page_title="AgilePlace Card Importer", layout="wide")
-st.title("📋 AgilePlace Card Hierarchy Uploader")
+st.title("📋 AgilePlace Hierarchy Uploader")
 
 # === Sidebar Configuration ===
 st.sidebar.header("🔐 API Configuration")
 domain = st.sidebar.text_input("Domain (e.g., ngarrett)", key="domain")
 token = st.sidebar.text_input("API Token", type="password", key="token")
 board_id = st.sidebar.text_input("Board ID", key="board")
+with open("sample_template.xlsx", "rb") as f:
+    st.sidebar.download_button(
+        label="⬇️ Download Sample Excel Template",
+        data=f,
+        file_name="agileplace_template.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # === File Upload ===
 uploaded_file = st.file_uploader("Upload your Excel file with card data", type=["xlsx"])
