@@ -175,22 +175,20 @@ if st.button("🚀 Run Import"):
                 if current_l2:
                     edges.append((current_l2, l3))
 
-    st.markdown("📁 **Hierarchy Preview**", unsafe_allow_html=True)
-    for l1 in levels["L1"]:
+        st.markdown("📁 **Hierarchy Preview**", unsafe_allow_html=True)
+        for l1 in levels["L1"]:
         st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
         for l2 in [child for parent, child in edges if parent == l1]:
-            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
-            for l3 in [child for parent, child in edges if parent == l2]:
-                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
+        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
+        for l3 in [child for parent, child in edges if parent == l2]:
+        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
         for l1 in levels["L1"]:
-            st.text(f"• {l1}")
-            for l2 in [child for parent, child in edges if parent == l1]:
-                st.text(f"    └─ {l2}")
-                for l3 in [child for parent, child in edges if parent == l2]:
-                    st.text(f"            └── {l3}")
-
-            # === HIERARCHY TREE VISUALIZATION ===
-
+        st.text(f"• {l1}")
+        for l2 in [child for parent, child in edges if parent == l1]:
+        st.text(f"    └─ {l2}")
+        for l3 in [child for parent, child in edges if parent == l2]:
+        st.text(f"            └── {l3}")
+        # === HIERARCHY TREE VISUALIZATION ===
         else:
-            st.info("Fill in the sidebar fields and upload a file to begin.")
-    # === SIMPLE HIERARCHY TEXT PREVIEW ===
+        st.info("Fill in the sidebar fields and upload a file to begin.")
+        # === SIMPLE HIERARCHY TEXT PREVIEW ===
