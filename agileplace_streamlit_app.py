@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import random
+import time
 from datetime import datetime
 
 st.set_page_config(page_title="AgilePlace Card Importer", layout="wide")
@@ -55,12 +56,14 @@ def create_card(title, description, custom_id, start_date, finish_date, header, 
     card_id = response.json()["id"]
     comment = random.choice(COMMENTS)
     post_comment(card_id, comment)
+    time.sleep(0.25)  # Rate limit: pause after create
     return card_id
 
 def connect_cards(parent_id, child_id):
     url = f"https://{domain}.leankit.com/io/card/{parent_id}/connection/many"
     payload = {"connectedCardIds": [str(child_id)]}
     response = requests.post(url, json=payload, headers=HEADERS)
+    time.sleep(0.25)  # Rate limit: pause after connect
     response.raise_for_status()
 
 def post_comment(card_id, comment_text):
@@ -172,13 +175,19 @@ if st.button("🚀 Run Import"):
                 if current_l2:
                     edges.append((current_l2, l3))
 
-        st.code("📁 Hierarchy:")
+    st.markdown("📁 **Hierarchy Preview**", unsafe_allow_html=True)
+    for l1 in levels["L1"]:
+        st.markdown(f"🔷 **{l1}**", unsafe_allow_html=True)
+        for l2 in [child for parent, child in edges if parent == l1]:
+            st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;🔹 {l2}", unsafe_allow_html=True)
+            for l3 in [child for parent, child in edges if parent == l2]:
+                st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;🔸 {l3}", unsafe_allow_html=True)
         for l1 in levels["L1"]:
             st.text(f"• {l1}")
             for l2 in [child for parent, child in edges if parent == l1]:
-                st.text(f"  └─ {l2}")
+                st.text(f"    └─ {l2}")
                 for l3 in [child for parent, child in edges if parent == l2]:
-                    st.text(f"            └── {l3}")
+        st.text(f"            └── {l3}")
 
             # === HIERARCHY TREE VISUALIZATION ===
 
